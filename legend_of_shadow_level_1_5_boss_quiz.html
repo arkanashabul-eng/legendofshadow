@@ -1,0 +1,2441 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Legend of Shadow — Level 1 - 4</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #10131a;
+    color: white;
+    font-family: Arial, sans-serifww
+    overflow: hidden;
+    user-select: none;
+    touch-action: none;
+}
+
+#game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #263b25;
+}
+
+#world {
+    position: absolute;
+    width: 2000px;
+    height: 1350px;
+    background:
+        linear-gradient(45deg, rgba(255,255,255,.03) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255,255,255,.03) 25%, transparent 25%),
+        #35633a;
+    background-size: 60px 60px;
+    will-change: transform;
+}
+
+.wall {
+    position: absolute;
+    background: #4b5260;
+    border: 4px solid #292d36;
+    box-shadow: inset 0 0 10px #777;
+}
+
+/* =========================
+   KNIGHT PLAYER
+========================= */
+#player {
+    position: absolute;
+    width: 48px;
+    height: 52px;
+    z-index: 10;
+    background: #394451;
+    border: 3px solid #151a20;
+    border-radius: 14px 14px 9px 9px;
+    box-shadow: 0 5px 10px rgba(0,0,0,.45);
+}
+
+/* helm */
+#player::before {
+    content: "";
+    position: absolute;
+    width: 38px;
+    height: 30px;
+    left: 2px;
+    top: -14px;
+    background: linear-gradient(#9faab5, #56616c);
+    border: 3px solid #20262d;
+    border-radius: 18px 18px 10px 10px;
+    box-shadow: inset 0 -7px rgba(0,0,0,.18);
+}
+
+/* visor + armor detail */
+
+/* Arah hadap ksatria */
+#player {
+    transform: scaleX(1);
+    transition: transform .12s ease-out;
+}
+
+#player.facing-left {
+    transform: scaleX(-1);
+}
+
+#player.facing-right {
+    transform: scaleX(1);
+}
+
+/* Saat berjalan, arah badan tetap mengikuti arah hadap */
+#player.walking.facing-left {
+    animation: knightWalkLeft .22s steps(2, end) infinite;
+}
+
+#player.walking.facing-right {
+    animation: knightWalkRight .22s steps(2, end) infinite;
+}
+
+@keyframes knightWalkLeft {
+    0% { transform: scaleX(-1) translateY(0) rotate(2deg); }
+    50% { transform: scaleX(-1) translateY(-3px) rotate(-2deg); }
+    100% { transform: scaleX(-1) translateY(0) rotate(2deg); }
+}
+
+@keyframes knightWalkRight {
+    0% { transform: scaleX(1) translateY(0) rotate(-2deg); }
+    50% { transform: scaleX(1) translateY(-3px) rotate(2deg); }
+    100% { transform: scaleX(1) translateY(0) rotate(-2deg); }
+}
+
+/* Animasi jalan ksatria */
+#player.walking {
+    animation: knightWalk .22s steps(2, end) infinite;
+}
+
+@keyframes knightWalk {
+    0% {
+        transform: translateY(0) rotate(-2deg);
+    }
+    50% {
+        transform: translateY(-3px) rotate(2deg);
+    }
+    100% {
+        transform: translateY(0) rotate(-2deg);
+    }
+}
+
+#player.walking .cape {
+    animation: capeWalk .22s ease-in-out infinite alternate;
+}
+
+@keyframes capeWalk {
+    from {
+        transform: translateX(-1px) rotate(-2deg);
+    }
+    to {
+        transform: translateX(2px) rotate(4deg);
+    }
+}
+
+#player::after {
+    content: "≡";
+    position: absolute;
+    width: 27px;
+    height: 9px;
+    left: 8px;
+    top: -2px;
+    color: #111820;
+    font-size: 16px;
+    line-height: 7px;
+    font-weight: bold;
+    text-align: center;
+    background: #20262d;
+    border: 2px solid #11161c;
+    border-radius: 3px;
+    z-index: 2;
+}
+
+/* cape */
+#player .cape {
+    position: absolute;
+    width: 28px;
+    height: 40px;
+    left: 8px;
+    top: 10px;
+    background: #7b2430;
+    border: 2px solid #46141b;
+    border-radius: 5px 5px 12px 12px;
+    z-index: -1;
+}
+
+/* shield */
+#player .shield {
+    position: absolute;
+    width: 18px;
+    height: 25px;
+    left: -11px;
+    top: 14px;
+    background: #87939e;
+    border: 3px solid #252c33;
+    border-radius: 6px 6px 10px 10px;
+}
+
+#sword {
+    position: absolute;
+    width: 62px;
+    height: 9px;
+    background: linear-gradient(#ffffff, #c8d0d8);
+    border: 2px solid #20252a;
+    border-radius: 5px;
+    z-index: 12;
+    display: none;
+    transform-origin: 5px center;
+    box-shadow: 0 0 6px rgba(255,255,255,.7);
+}
+
+#sword.swinging {
+    display: block;
+    animation: swordSwing .18s ease-out forwards;
+}
+
+@keyframes swordSwing {
+    0% {
+        opacity: 0;
+        transform: rotate(-65deg) scale(.8);
+    }
+    35% {
+        opacity: 1;
+        transform: rotate(-20deg) scale(1.05);
+    }
+    70% {
+        opacity: 1;
+        transform: rotate(28deg) scale(1.12);
+    }
+    100% {
+        opacity: 0;
+        transform: rotate(65deg) scale(1);
+    }
+}
+
+/* Jejak cahaya ketika pedang diayunkan */
+#sword.swinging::after {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: -7px;
+    width: 55px;
+    height: 23px;
+    border-top: 3px solid rgba(255,255,255,.75);
+    border-radius: 50%;
+    transform: rotate(18deg);
+    opacity: .65;
+}
+#sword::before {
+    content: "";
+    position: absolute;
+    width: 15px;
+    height: 13px;
+    left: -5px;
+    top: -4px;
+    background: #c79b45;
+    border: 2px solid #5b421b;
+    border-radius: 4px;
+}
+#sword::after {
+    content: "";
+    position: absolute;
+    width: 7px;
+    height: 17px;
+    left: -13px;
+    top: -6px;
+    background: #6d4324;
+    border: 2px solid #382215;
+    border-radius: 4px;
+}
+
+.enemy {
+    position: absolute;
+    width: 46px;
+    height: 44px;
+    background: linear-gradient(145deg, #6fa64d, #29482a);
+    border: 4px solid #172b18;
+    border-radius: 45% 45% 38% 38%;
+    z-index: 8;
+    box-shadow: 0 0 14px rgba(90,255,80,.35);
+    transition: transform .1s;
+}
+
+.enemy::before,
+.enemy::after {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 17px;
+    top: -13px;
+    background: #d7d0a0;
+    border: 3px solid #3c3823;
+    border-radius: 70% 20% 60% 20%;
+    transform-origin: bottom center;
+}
+
+.enemy::before {
+    left: 3px;
+    transform: rotate(-25deg);
+}
+
+.enemy::after {
+    right: 3px;
+    transform: rotate(25deg);
+}
+
+/* Animasi musuh saat terkena serangan terakhir */
+.enemy.enemy-dying {
+    animation: enemyDeath .48s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes enemyDeath {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+        filter: brightness(1);
+    }
+    25% {
+        transform: scale(1.25) rotate(-8deg);
+        opacity: 1;
+        filter: brightness(2);
+    }
+    60% {
+        transform: scale(.75) rotate(18deg);
+        opacity: .7;
+        filter: brightness(1.5);
+    }
+    100% {
+        transform: scale(0) rotate(55deg);
+        opacity: 0;
+        filter: brightness(1);
+    }
+}
+
+/* Partikel kecil saat musuh dikalahkan */
+.enemy-particle {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ffd84d;
+    border: 1px solid #8a5c00;
+    z-index: 20;
+    pointer-events: none;
+    animation: enemyParticle .45s ease-out forwards;
+}
+
+@keyframes enemyParticle {
+    from {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: translate(var(--dx), var(--dy)) scale(0);
+        opacity: 0;
+    }
+}
+
+.enemy .monster-face {
+    position: absolute;
+    left: 7px;
+    right: 7px;
+    top: 8px;
+    height: 27px;
+}
+
+.enemy .monster-face::before {
+    content: "●  ●";
+    position: absolute;
+    width: 100%;
+    color: #ffe44d;
+    font-size: 11px;
+    text-align: center;
+    text-shadow: 0 0 5px #ff4d00;
+}
+
+.enemy .monster-face::after {
+    content: "⌄";
+    position: absolute;
+    left: 10px;
+    bottom: 0;
+    width: 18px;
+    height: 9px;
+    color: #f5eee0;
+    background: #182318;
+    border: 2px solid #101810;
+    border-radius: 3px 3px 8px 8px;
+    text-align: center;
+    line-height: 5px;
+}
+
+
+/* =========================
+   BOSS LEVEL 5
+========================= */
+.enemy.boss {
+    width: 86px;
+    height: 78px;
+    background: linear-gradient(145deg, #b83b3b, #4a1118);
+    border: 5px solid #250b0b;
+    border-radius: 45% 45% 35% 35%;
+    z-index: 9;
+    box-shadow: 0 0 22px rgba(255,70,50,.75), 0 0 45px rgba(180,20,20,.35);
+    animation: bossPulse 1s infinite alternate;
+}
+.enemy.boss::before,
+.enemy.boss::after {
+    width: 22px;
+    height: 30px;
+    top: -22px;
+    background: #d9c29a;
+    border: 4px solid #351313;
+}
+.enemy.boss::before { left: 8px; transform: rotate(-28deg); }
+.enemy.boss::after { right: 8px; transform: rotate(28deg); }
+.enemy.boss .monster-face {
+    left: 10px;
+    right: 10px;
+    top: 13px;
+    height: 42px;
+}
+.enemy.boss .monster-face::before {
+    content: "●   ●";
+    color: #ffec55;
+    font-size: 18px;
+    text-shadow: 0 0 8px #ff3b18;
+}
+.enemy.boss .monster-face::after {
+    left: 20px;
+    bottom: -2px;
+    width: 28px;
+    height: 13px;
+    font-size: 15px;
+    line-height: 7px;
+    color: #fff;
+    background: #190808;
+    border-color: #090303;
+}
+@keyframes bossPulse {
+    from { transform: scale(1); filter: brightness(1); }
+    to { transform: scale(1.05); filter: brightness(1.18); }
+}
+.enemy.boss.enemy-dying {
+    animation: bossDeath .75s ease-out forwards;
+}
+@keyframes bossDeath {
+    0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+    25% { transform: scale(1.25) rotate(-8deg); opacity: 1; filter: brightness(2); }
+    55% { transform: scale(1.45) rotate(12deg); opacity: .8; filter: brightness(2.5); }
+    100% { transform: scale(0) rotate(80deg); opacity: 0; filter: brightness(1); }
+}
+
+#bossBarBox {
+    display: none;
+    margin-top: 10px;
+    width: 230px;
+}
+#bossName {
+    color: #ff7070;
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 4px;
+    text-shadow: 0 0 6px #ff2222;
+}
+#bossBar {
+    width: 100%;
+    height: 14px;
+    background: #260909;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+#bossHp {
+    width: 100%;
+    height: 100%;
+    background: #d83232;
+    transition: width .15s;
+}
+
+.coin {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    background: gold;
+    border: 3px solid #a66c00;
+    border-radius: 50%;
+    z-index: 5;
+    animation: coinSpin 1s infinite alternate;
+}
+
+@keyframes coinSpin {
+    from { transform: scaleX(.7); }
+    to { transform: scaleX(1); }
+}
+
+#portal {
+    position: absolute;
+    width: 70px;
+    height: 90px;
+    background: #a84cff;
+    border: 6px solid #e3b2ff;
+    border-radius: 50% 50% 10px 10px;
+    box-shadow: 0 0 30px #c44cff;
+    z-index: 4;
+    animation: portalGlow 1s infinite alternate;
+}
+
+@keyframes portalGlow {
+    from {
+        box-shadow: 0 0 20px #c44cff;
+    }
+    to {
+        box-shadow: 0 0 45px #e879ff;
+    }
+}
+
+#hud {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 100;
+    background: rgba(0,0,0,.7);
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 2px solid #777;
+    min-width: 230px;
+}
+
+#title {
+    font-size: 20px;
+    color: #ffd85a;
+    margin-bottom: 8px;
+}
+
+#hpBar {
+    width: 180px;
+    height: 16px;
+    background: #351515;
+    border: 2px solid white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#hp {
+    width: 100%;
+    height: 100%;
+    background: #ef3d3d;
+    transition: .2s;
+}
+
+#info {
+    margin-top: 7px;
+    font-size: 14px;
+}
+
+#message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 200;
+    background: rgba(0,0,0,.92);
+    border: 3px solid #ffd85a;
+    padding: 30px;
+    border-radius: 18px;
+    text-align: center;
+    display: none;
+    min-width: 280px;
+}
+
+#message h1 {
+    color: #ffd85a;
+    margin-bottom: 15px;
+}
+
+#message button {
+    margin-top: 20px;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 10px;
+    background: #35a7ff;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+
+/* =========================
+   MENU UPGRADE SENJATA
+========================= */
+#upgradeButton{
+    position:fixed;
+    top:18px;
+    right:18px;
+    z-index:180;
+    padding:11px 15px;
+    border:2px solid #f0d477;
+    border-radius:12px;
+    background:rgba(25,20,10,.92);
+    color:#ffd85a;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 0 12px rgba(255,216,90,.18);
+}
+#upgradeButton:hover{
+    background:#30250e;
+    transform:translateY(-1px);
+}
+#upgradeModal{
+    position:fixed;
+    inset:0;
+    z-index:1100;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.82);
+    padding:20px;
+}
+#upgradeBox{
+    width:min(92vw,430px);
+    background:#101820;
+    border:3px solid #f0d477;
+    border-radius:20px;
+    padding:24px;
+    text-align:center;
+    box-shadow:0 0 35px rgba(240,212,119,.25);
+}
+#upgradeBox h2{
+    color:#ffd85a;
+    margin-bottom:10px;
+}
+#weaponIcon{
+    font-size:55px;
+    margin:5px 0 8px;
+}
+#weaponStats{
+    line-height:1.7;
+    color:#d8dde2;
+    margin-bottom:16px;
+}
+.upgradeAction{
+    width:100%;
+    padding:13px;
+    margin-top:8px;
+    border:0;
+    border-radius:10px;
+    background:#35a7ff;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:16px;
+}
+.upgradeAction:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+}
+#upgradeClose{
+    background:#3b4148;
+}
+#upgradeNotice{
+    min-height:24px;
+    margin-top:12px;
+    color:#ffd85a;
+    font-size:14px;
+}
+.weaponLevelBadge{
+    display:inline-block;
+    padding:3px 9px;
+    border-radius:20px;
+    background:#6c4d10;
+    color:#ffe69a;
+    font-weight:bold;
+}
+
+#controls {
+    position: fixed;
+    bottom: 25px;
+    left: 25px;
+    z-index: 150;
+    display: grid;
+    grid-template-columns: 55px 55px 55px;
+    gap: 5px;
+}
+
+.control {
+    width: 55px;
+    height: 55px;
+    border-radius: 12px;
+    border: 2px solid white;
+    background: rgba(0,0,0,.55);
+    color: white;
+    font-size: 22px;
+}
+
+.control:active {
+    background: rgba(53,167,255,.7);
+}
+
+
+.sword.weapon-upgraded{
+    animation: weaponUpgradeFlash .65s ease;
+}
+@keyframes weaponUpgradeFlash{
+    0%{filter:drop-shadow(0 0 0 #ffd85a);transform:scale(1) rotate(var(--attack-angle,0rad))}
+    35%{filter:drop-shadow(0 0 18px #ffd85a);transform:scale(1.35) rotate(var(--attack-angle,0rad))}
+    100%{filter:drop-shadow(0 0 0 #ffd85a);transform:scale(1) rotate(var(--attack-angle,0rad))}
+}
+
+#attackBtn {
+    position: fixed;
+    right: 35px;
+    bottom: 45px;
+    z-index: 150;
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    border: 3px solid white;
+    background: #a83232;
+    color: white;
+    font-weight: bold;
+    font-size: 24px;
+}
+
+#attackBtn:active {
+    transform: scale(.92);
+}
+
+@media (max-width: 600px) {
+    #hud {
+        transform: scale(.85);
+        transform-origin: top left;
+    }
+
+    #controls {
+        left: 15px;
+        bottom: 15px;
+    }
+
+    #attackBtn {
+        right: 20px;
+        bottom: 30px;
+    }
+}
+
+/* =========================
+   MENU UTAMA
+========================= */
+#mainMenu {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 35%, rgba(91, 116, 72, .28), transparent 35%),
+        linear-gradient(135deg, #0b1010, #17241a 55%, #080b0c);
+}
+
+#mainMenu::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg, transparent 48%, rgba(255,255,255,.025) 50%, transparent 52%),
+        linear-gradient(0deg, transparent 48%, rgba(255,255,255,.025) 50%, transparent 52%);
+    background-size: 90px 90px;
+    opacity: .35;
+}
+
+.menuPanel {
+    position: relative;
+    width: min(90vw, 620px);
+    padding: 52px 35px 42px;
+    text-align: center;
+    border: 3px solid #a98743;
+    border-radius: 24px;
+    background: rgba(7, 11, 10, .88);
+    box-shadow: 0 0 50px rgba(0,0,0,.65), inset 0 0 30px rgba(255,215,100,.05);
+}
+
+.menuTitle {
+    font-family: Georgia, serif;
+    font-size: clamp(42px, 8vw, 72px);
+    letter-spacing: 5px;
+    color: #f3d06a;
+    text-shadow: 0 4px 0 #463718, 0 0 22px rgba(255,216,90,.35);
+    margin-bottom: 8px;
+}
+
+.menuSubtitle {
+    color: #c8c8b9;
+    font-size: 15px;
+    letter-spacing: 3px;
+    margin-bottom: 36px;
+}
+
+.startButton {
+    min-width: 230px;
+    padding: 16px 35px;
+    border: 3px solid #f0d477;
+    border-radius: 12px;
+    background: linear-gradient(#8b6825, #584318);
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(240,212,119,.2);
+    transition: .18s;
+}
+
+.startButton:hover {
+    transform: scale(1.05);
+    background: linear-gradient(#a77d2d, #6c511d);
+    box-shadow: 0 0 30px rgba(240,212,119,.4);
+}
+
+.startButton:active {
+    transform: scale(.97);
+}
+
+.menuHint {
+    margin-top: 24px;
+    color: #8f968d;
+    font-size: 13px;
+}
+
+#mainMenu.hidden {
+    animation: menuFadeOut .45s ease forwards;
+    pointer-events: none;
+}
+
+@keyframes menuFadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+
+#menuButton {
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    z-index: 50;
+    padding: 9px 16px;
+    border: 2px solid #d7b85c;
+    border-radius: 8px;
+    background: rgba(35, 28, 12, .9);
+    color: #f5df91;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(215,184,92,.18);
+    transition: .15s;
+}
+
+#menuButton:hover {
+    transform: scale(1.05);
+    background: rgba(75, 56, 18, .95);
+}
+
+
+
+/* =========================
+   EFEK TELEPORTASI
+========================= */
+#teleportEffect{
+    position:fixed;
+    inset:0;
+    z-index:2000;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+    background:radial-gradient(circle, rgba(120,210,255,.16) 0%, rgba(10,15,30,.88) 45%, rgba(0,0,0,.98) 100%);
+}
+#teleportEffect.active{
+    display:flex;
+    animation:teleportScreen .95s ease-in-out forwards;
+}
+.teleportCore{
+    position:relative;
+    width:110px;
+    height:110px;
+    border:4px solid #8de8ff;
+    border-radius:50%;
+    box-shadow:0 0 18px #8de8ff, 0 0 55px rgba(80,190,255,.8), inset 0 0 25px rgba(141,232,255,.8);
+    animation:teleportCore 1s ease-in-out forwards;
+}
+.teleportCore::before,
+.teleportCore::after{
+    content:"";
+    position:absolute;
+    inset:-22px;
+    border:3px solid rgba(141,232,255,.7);
+    border-radius:50%;
+    animation:teleportRing .9s ease-out infinite;
+}
+.teleportCore::after{
+    inset:-42px;
+    animation-delay:.18s;
+}
+.teleportSpark{
+    position:absolute;
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:#dffaff;
+    box-shadow:0 0 12px #8de8ff;
+    animation:teleportSpark 1s ease-out infinite;
+}
+.teleportSpark:nth-child(2){transform:rotate(25deg) translateY(-105px);animation-delay:.05s}
+.teleportSpark:nth-child(3){transform:rotate(95deg) translateY(-120px);animation-delay:.18s}
+.teleportSpark:nth-child(4){transform:rotate(165deg) translateY(-105px);animation-delay:.31s}
+.teleportSpark:nth-child(5){transform:rotate(235deg) translateY(-120px);animation-delay:.44s}
+.teleportSpark:nth-child(6){transform:rotate(305deg) translateY(-105px);animation-delay:.57s}
+.teleportText{
+    position:absolute;
+    margin-top:210px;
+    color:#dffaff;
+    font-weight:bold;
+    letter-spacing:3px;
+    text-shadow:0 0 12px #5ddcff;
+    animation:teleportText .95s ease-in-out forwards;
+}
+@keyframes teleportScreen{
+    0%{opacity:0}
+    25%{opacity:1}
+    72%{opacity:1}
+    100%{opacity:0}
+}
+@keyframes teleportCore{
+    0%{transform:scale(.25) rotate(0);opacity:.2}
+    55%{transform:scale(1.15) rotate(180deg);opacity:1}
+    100%{transform:scale(2.8) rotate(360deg);opacity:0}
+}
+@keyframes teleportRing{
+    0%{transform:scale(.35);opacity:0}
+    35%{opacity:1}
+    100%{transform:scale(1.7);opacity:0}
+}
+@keyframes teleportSpark{
+    0%{opacity:0;transform:rotate(var(--r,0deg)) translateY(-35px) scale(.4)}
+    30%{opacity:1}
+    100%{opacity:0;transform:rotate(var(--r,0deg)) translateY(-150px) scale(1.4)}
+}
+@keyframes teleportText{
+    0%{opacity:0;transform:translateY(10px)}
+    45%{opacity:1;transform:translateY(0)}
+    100%{opacity:0;transform:translateY(-12px)}
+}
+
+/* =========================
+   QUIZ BAHASA INDONESIA
+========================= */
+#quizModal{
+    position:fixed;
+    inset:0;
+    z-index:1200;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.86);
+    padding:20px;
+}
+#quizBox{
+    width:min(94vw,650px);
+    max-height:90vh;
+    overflow:auto;
+    background:#101820;
+    border:3px solid #f0d477;
+    border-radius:20px;
+    padding:26px;
+    box-shadow:0 0 35px rgba(240,212,119,.25);
+}
+#quizBox h2{
+    color:#f3d06a;
+    text-align:center;
+    margin-bottom:8px;
+}
+#quizProgress{
+    text-align:center;
+    color:#aeb8b0;
+    font-size:14px;
+    margin-bottom:18px;
+}
+#quizQuestion{
+    font-size:19px;
+    line-height:1.5;
+    margin-bottom:16px;
+}
+.quizOption{
+    display:block;
+    width:100%;
+    text-align:left;
+    margin:9px 0;
+    padding:13px 15px;
+    border:2px solid #4b5964;
+    border-radius:10px;
+    background:#1b2630;
+    color:white;
+    cursor:pointer;
+    font-size:15px;
+    transition:.15s;
+}
+.quizOption:hover{
+    background:#293844;
+    border-color:#f0d477;
+}
+.quizOption.correct{
+    background:#1f6338;
+    border-color:#62e58b;
+}
+.quizOption.wrong{
+    background:#6a2929;
+    border-color:#ff7777;
+}
+.quizOption:disabled{
+    cursor:default;
+    opacity:1;
+}
+#quizFeedback{
+    min-height:25px;
+    margin-top:12px;
+    text-align:center;
+    font-weight:bold;
+}
+#quizNext,#quizRetry{
+    display:none;
+    width:100%;
+    margin-top:16px;
+    padding:12px;
+    border:0;
+    border-radius:10px;
+    background:#35a7ff;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    font-size:16px;
+}
+#quizResult{
+    text-align:center;
+    font-size:18px;
+    line-height:1.6;
+}
+
+</style>
+</head>
+
+<body>
+
+
+<div id="mainMenu">
+    <div class="menuPanel">
+        <div class="menuTitle">LEGEND OF SHADOW</div>
+        <div class="menuSubtitle">THE KNIGHT'S ADVENTURE</div>
+
+        <button class="startButton" id="startButton">
+            ⚔️ MULAI
+        </button>
+
+        <div class="menuHint">
+            Gunakan WASD / tombol panah untuk bergerak<br>
+            Tekan SPACE untuk menyerang
+        </div>
+    </div>
+</div>
+
+
+<!-- QUIZ BAHASA INDONESIA KELAS 11 -->
+<div id="teleportEffect" aria-hidden="true">
+    <div class="teleportCore">
+        <span class="teleportSpark"></span>
+        <span class="teleportSpark"></span>
+        <span class="teleportSpark"></span>
+        <span class="teleportSpark"></span>
+        <span class="teleportSpark"></span>
+    </div>
+    <div class="teleportText">TELEPORTASI...</div>
+</div>
+<div id="quizModal">
+    <div id="quizBox">
+        <h2>📚 QUIZ BAHASA INDONESIA KELAS 11</h2>
+        <div id="quizProgress"></div>
+        <div id="quizQuestion"></div>
+        <div id="quizOptions"></div>
+        <div id="quizFeedback"></div>
+        <button id="quizNext" type="button">SOAL BERIKUTNYA ➜</button>
+        <button id="quizRetry" type="button">ULANGI QUIZ 🔄</button>
+    </div>
+</div>
+
+<div id="game">
+
+    <div id="world">
+
+        <!-- MAP DIBUAT OTOMATIS OLEH SISTEM LEVEL -->
+        <div id="mapWalls"></div>
+
+        <div id="player">
+            <div class="cape"></div>
+            <div class="shield"></div>
+        </div>
+        <div id="sword"></div>
+
+        <div id="portal"></div>
+
+    </div>
+</div>
+
+<div id="hud">
+    <div id="title">⚔️ LEGEND OF SHADOW — LEVEL <span id="levelNumber">1</span></div>
+<button id="menuButton" onclick="backToMainMenu()">🏠 MENU</button>
+
+    <div>HP</div>
+
+    <div id="hpBar">
+        <div id="hp"></div>
+    </div>
+
+    <div id="info">
+        ❤️ <span id="hpText">100</span>
+        &nbsp;&nbsp;
+        🪙 <span id="coins">0</span>
+    </div>
+
+    <div id="bossBarBox">
+        <div id="bossName">👹 BOSS — DARK LORD</div>
+        <div id="bossBar"><div id="bossHp"></div></div>
+        <div style="font-size:12px;margin-top:3px;">HP Boss: <span id="bossHpText">0</span></div>
+    </div>
+</div>
+
+
+<button id="upgradeButton" type="button">⚔️ UPGRADE SENJATA</button>
+
+<div id="upgradeModal">
+    <div id="upgradeBox">
+        <div id="weaponIcon">⚔️</div>
+        <h2>UPGRADE SENJATA</h2>
+        <div id="weaponStats"></div>
+        <button id="upgradeAction" class="upgradeAction" type="button"></button>
+        <button id="upgradeClose" class="upgradeAction" type="button">TUTUP</button>
+        <div id="upgradeNotice"></div>
+    </div>
+</div>
+
+<div id="message">
+    <h1 id="messageTitle">GAME OVER</h1>
+    <p id="messageText"></p>
+    <button onclick="restartGame()">MAIN LAGI</button>
+</div>
+
+<div id="controls">
+
+    <div></div>
+    <button class="control" data-key="ArrowUp">▲</button>
+    <div></div>
+
+    <button class="control" data-key="ArrowLeft">◀️</button>
+    <button class="control" data-key="ArrowDown">▼</button>
+    <button class="control" data-key="ArrowRight">▶️</button>
+
+</div>
+
+<button id="attackBtn">⚔️</button>
+
+<script>
+
+const player = document.getElementById("player");
+const world = document.getElementById("world");
+const sword = document.getElementById("sword");
+
+let px = 100;
+let py = 100;
+
+const playerSize = 48;
+
+let speed = 4;
+let hp = 100;
+let coins = 0;
+
+// Sistem upgrade senjata.
+// Level 0 = senjata awal, maksimal Level 5.
+let weaponLevel = 0;
+let weaponDamage = 1;
+const weaponMaxLevel = 5;
+const weaponCosts = [10, 20, 35, 55, 80];
+const weaponDamageByLevel = [1, 2, 3, 4, 5, 6];
+
+let keys = {};
+let attacking = false;
+let gameRunning = true;
+
+let lastDamageTime = 0;
+let lastAttackTime = 0;
+
+let facingX = 1;
+let facingY = 0;
+
+const enemies = [];
+const coinObjects = [];
+
+const walls = [];
+
+// =========================
+// DATA LEVEL
+// =========================
+const levels = {
+    1: {
+        width: 1800,
+        height: 1200,
+        start: { x: 100, y: 100 },
+        portal: { x: 1650, y: 1030 },
+        walls: [
+            { x: 0, y: 0, w: 1800, h: 35 },
+            { x: 0, y: 1165, w: 1800, h: 35 },
+            { x: 0, y: 0, w: 35, h: 1200 },
+            { x: 1765, y: 0, w: 35, h: 1200 },
+            { x: 350, y: 200, w: 500, h: 40 },
+            { x: 350, y: 200, w: 40, h: 300 },
+            { x: 1000, y: 500, w: 400, h: 40 },
+            { x: 1000, y: 500, w: 40, h: 300 }
+        ],
+        enemies: [
+            [500, 350], [750, 650], [1100, 300], [1350, 750], [1500, 500]
+        ],
+        enemyHP: 2,
+        enemySpeed: 1.1,
+        damage: 10,
+        coins: [
+            [250, 250], [600, 150], [900, 400],
+            [1200, 200], [1450, 900], [1550, 700], [300, 900]
+        ]
+    },
+
+    2: {
+        width: 2000,
+        height: 1350,
+        start: { x: 100, y: 100 },
+        portal: { x: 1850, y: 1190 },
+        walls: [
+            { x: 0, y: 0, w: 2000, h: 35 },
+            { x: 0, y: 1315, w: 2000, h: 35 },
+            { x: 0, y: 0, w: 35, h: 1350 },
+            { x: 1965, y: 0, w: 35, h: 1350 },
+            { x: 300, y: 180, w: 620, h: 40 },
+            { x: 300, y: 180, w: 40, h: 420 },
+            { x: 620, y: 420, w: 40, h: 390 },
+            { x: 920, y: 180, w: 40, h: 420 },
+            { x: 1080, y: 300, w: 600, h: 40 },
+            { x: 1080, y: 300, w: 40, h: 500 },
+            { x: 1450, y: 650, w: 40, h: 430 },
+            { x: 1120, y: 1040, w: 370, h: 40 },
+            { x: 400, y: 950, w: 500, h: 40 },
+            { x: 400, y: 990, w: 40, h: 220 }
+        ],
+        enemies: [
+            [500, 330], [760, 300], [760, 720], [1120, 480],
+            [1300, 180], [1370, 520], [1580, 850], [1720, 1080], [900, 1100]
+        ],
+        enemyHP: 3,
+        enemySpeed: 1.45,
+        damage: 12,
+        coins: [
+            [220, 120], [520, 300], [760, 900], [1000, 680],
+            [1250, 180], [1370, 900], [1580, 500], [1740, 850], [1840, 1100]
+        ]
+    },
+
+    3: {
+        width: 2200, height: 1450,
+        start: { x: 100, y: 100 }, portal: { x: 2050, y: 1300 },
+        walls: [
+            {x:0,y:0,w:2200,h:35},{x:0,y:1415,w:2200,h:35},{x:0,y:0,w:35,h:1450},{x:2165,y:0,w:35,h:1450},
+            {x:250,y:180,w:650,h:40},{x:250,y:180,w:40,h:450},{x:860,y:180,w:40,h:280},
+            {x:1050,y:350,w:700,h:40},{x:1050,y:350,w:40,h:500},{x:1500,y:350,w:40,h:450},
+            {x:500,y:780,w:700,h:40},{x:500,y:820,w:40,h:400},{x:1200,y:950,w:650,h:40},{x:1810,y:700,w:40,h:290}
+        ],
+        enemies: [[500,350],[760,650],[1100,250],[1350,650],[1600,500],[1750,850],[900,1050],[1900,1150],[1200,1200],[400,1150]],
+        enemyHP: 4, enemySpeed: 1.7, damage: 14,
+        coins: [[180,250],[450,650],[950,250],[1150,550],[1450,700],[1700,300],[1900,700],[700,1100],[1350,1100],[2000,1200]]
+    },
+
+    4: {
+        width: 2400, height: 1550,
+        start: { x: 100, y: 100 }, portal: { x: 2250, y: 1400 },
+        walls: [
+            {x:0,y:0,w:2400,h:35},{x:0,y:1515,w:2400,h:35},{x:0,y:0,w:35,h:1550},{x:2365,y:0,w:35,h:1550},
+            {x:250,y:160,w:750,h:40},{x:250,y:160,w:40,h:520},{x:960,y:160,w:40,h:300},
+            {x:1150,y:300,w:750,h:40},{x:1150,y:300,w:40,h:550},{x:1650,y:300,w:40,h:400},
+            {x:450,y:850,w:850,h:40},{x:450,y:890,w:40,h:420},{x:1250,y:1050,w:750,h:40},
+            {x:1960,y:1050,w:40,h:300},{x:1500,y:650,w:40,h:400},{x:800,y:1250,w:40,h:220}
+        ],
+        enemies: [[500,300],[800,600],[1100,200],[1300,500],[1550,750],[1800,500],[2050,800],[2100,1200],[1000,1150],[600,1400],[1500,1300],[350,1050]],
+        enemyHP: 5, enemySpeed: 1.95, damage: 16,
+        coins: [[180,260],[500,500],[850,250],[1100,700],[1400,250],[1750,550],[2100,650],[2150,1050],[1300,1200],[900,1400],[500,1200],[2200,1350]]
+    },
+
+    5: {
+        width: 2600,
+        height: 1700,
+        start: { x: 130, y: 130 },
+        portal: { x: 2420, y: 1500 },
+        walls: [
+            {x:0,y:0,w:2600,h:35},{x:0,y:1665,w:2600,h:35},
+            {x:0,y:0,w:35,h:1700},{x:2565,y:0,w:35,h:1700},
+            {x:300,y:220,w:700,h:45},{x:300,y:220,w:45,h:430},
+            {x:955,y:220,w:45,h:300},{x:1150,y:350,w:850,h:45},
+            {x:1150,y:350,w:45,h:500},{x:1955,y:350,w:45,h:500},
+            {x:500,y:850,w:700,h:45},{x:500,y:895,w:45,h:430},
+            {x:1200,y:1050,w:750,h:45},{x:1905,y:1050,w:45,h:360},
+            {x:800,y:1350,w:900,h:45}
+        ],
+        enemies: [[2200, 1330]],
+        enemyHP: 24,
+        enemySpeed: 1.0,
+        damage: 20,
+        boss: true,
+        coins: [
+            [220,300],[520,180],[900,650],[1100,250],[1350,650],
+            [1750,250],[2150,500],[2300,850],[2100,1200],
+            [1550,1300],[950,1450],[350,1250],[2350,1450]
+        ]
+    }
+};
+
+
+/* =========================
+   KEYBOARD
+========================= */
+
+document.addEventListener("keydown", e => {
+
+    keys[e.key] = true;
+
+    if (
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown" ||
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowRight"
+    ) {
+        e.preventDefault();
+    }
+
+    if (e.code === "Space") {
+        e.preventDefault();
+        attack();
+    }
+
+});
+
+document.addEventListener("keyup", e => {
+    keys[e.key] = false;
+});
+
+
+/* =========================
+   MOBILE CONTROL
+========================= */
+
+document.querySelectorAll(".control").forEach(btn => {
+
+    const key = btn.dataset.key;
+
+    function start(e) {
+        e.preventDefault();
+        keys[key] = true;
+    }
+
+    function stop(e) {
+        e.preventDefault();
+        keys[key] = false;
+    }
+
+    btn.addEventListener("touchstart", start, {
+        passive: false
+    });
+
+    btn.addEventListener("touchend", stop, {
+        passive: false
+    });
+
+    btn.addEventListener("touchcancel", stop, {
+        passive: false
+    });
+
+    btn.addEventListener("mousedown", start);
+    btn.addEventListener("mouseup", stop);
+    btn.addEventListener("mouseleave", stop);
+
+});
+
+
+/* =========================
+   ATTACK BUTTON
+========================= */
+
+document.getElementById("attackBtn")
+    .addEventListener("pointerdown", e => {
+
+        e.preventDefault();
+        attack();
+
+    });
+
+
+/* =========================
+   CREATE ENEMY
+========================= */
+
+function createEnemy(x, y) {
+
+    const element = document.createElement("div");
+
+    const isBoss = currentLevelNumber === 5 && currentLevel.boss;
+    element.className = isBoss ? "enemy boss" : "enemy";
+
+    const face = document.createElement("div");
+    face.className = "monster-face";
+    element.appendChild(face);
+
+    element.style.left = x + "px";
+    element.style.top = y + "px";
+
+    world.appendChild(element);
+
+    enemies.push({
+        element,
+        x,
+        y,
+        hp: currentLevel.enemyHP,
+        maxHp: currentLevel.enemyHP,
+        speed: currentLevel.enemySpeed,
+        isBoss
+    });
+
+    if (isBoss) {
+        updateBossBar(currentLevel.enemyHP);
+    }
+}
+
+/* =========================
+   CREATE COINS
+========================= */
+
+function createCoin(x, y) {
+    const element = document.createElement("div");
+
+    element.className = "coin";
+    element.style.left = x + "px";
+    element.style.top = y + "px";
+
+    world.appendChild(element);
+
+    coinObjects.push({
+        element,
+        x,
+        y,
+        collected: false
+    });
+}
+
+function updateBossBar(hpValue) {
+    const box = document.getElementById("bossBarBox");
+    const bar = document.getElementById("bossHp");
+    const text = document.getElementById("bossHpText");
+    const boss = enemies.find(e => e.isBoss);
+
+    if (!boss || currentLevelNumber !== 5) {
+        box.style.display = "none";
+        return;
+    }
+
+    const hpNow = Math.max(0, hpValue ?? boss.hp);
+    box.style.display = "block";
+    bar.style.width = ((hpNow / boss.maxHp) * 100) + "%";
+    text.innerText = hpNow;
+}
+
+/* =========================
+   LOAD LEVEL
+========================= */
+
+let currentLevelNumber = 1;
+let currentLevel = levels[1];
+
+function clearLevelObjects() {
+    enemies.forEach(enemy => enemy.element.remove());
+    coinObjects.forEach(coin => coin.element.remove());
+
+    enemies.length = 0;
+    coinObjects.length = 0;
+
+    // Hapus juga data collision tembok dari level sebelumnya.
+    walls.length = 0;
+
+    const mapWalls = document.getElementById("mapWalls");
+    mapWalls.innerHTML = "";
+}
+
+function loadLevel(levelNumber) {
+    currentLevelNumber = levelNumber;
+    currentLevel = levels[levelNumber];
+
+    clearLevelObjects();
+
+    // Bangun tembok level.
+    const mapWalls = document.getElementById("mapWalls");
+
+    currentLevel.walls.forEach(wall => {
+        const element = document.createElement("div");
+        element.className = "wall";
+        element.style.left = wall.x + "px";
+        element.style.top = wall.y + "px";
+        element.style.width = wall.w + "px";
+        element.style.height = wall.h + "px";
+        mapWalls.appendChild(element);
+
+        // PENTING: masukkan tembok ke daftar collision.
+        // Sebelumnya tembok hanya dibuat secara visual sehingga
+        // player tidak pernah benar-benar mendeteksi tembok.
+        walls.push({
+            x: wall.x,
+            y: wall.y,
+            w: wall.w,
+            h: wall.h
+        });
+    });
+
+    // Setiap level dimulai dengan HP penuh.
+    hp = 100;
+    document.getElementById("hp").style.width = "100%";
+    document.getElementById("hpText").innerText = "100";
+
+    // Posisi awal ksatria.
+    px = currentLevel.start.x;
+    py = currentLevel.start.y;
+    facingX = 1;
+    facingY = 0;
+
+    player.classList.remove("walking", "facing-left");
+    player.classList.add("facing-right");
+
+    // Buat monster.
+    currentLevel.enemies.forEach(([x, y]) => createEnemy(x, y));
+
+    // Buat koin.
+    currentLevel.coins.forEach(([x, y]) => createCoin(x, y));
+
+    // Pindahkan portal.
+    portal.style.left = currentLevel.portal.x + "px";
+    portal.style.top = currentLevel.portal.y + "px";
+    portal.style.display = currentLevelNumber === 5 ? "none" : "block";
+
+    document.getElementById("levelNumber").innerText = currentLevelNumber;
+    updateBossBar();
+    document.getElementById("coins").innerText = coins;
+    updateUpgradeUI();
+
+    // Ukuran world mengikuti level.
+    world.style.width = currentLevel.width + "px";
+    world.style.height = currentLevel.height + "px";
+
+    // Pastikan game berjalan.
+    gameRunning = true;
+}
+
+loadLevel(1);
+
+
+/* =========================
+   DISTANCE
+========================= */
+
+function distance(x1, y1, x2, y2) {
+
+    return Math.hypot(
+        x1 - x2,
+        y1 - y2
+    );
+
+}
+
+
+/* =========================
+   RECTANGLE COLLISION
+========================= */
+
+function circleRectCollision(
+    cx,
+    cy,
+    radius,
+    rect
+) {
+
+    const closestX =
+        Math.max(
+            rect.x,
+            Math.min(cx, rect.x + rect.w)
+        );
+
+    const closestY =
+        Math.max(
+            rect.y,
+            Math.min(cy, rect.y + rect.h)
+        );
+
+    const dx = cx - closestX;
+    const dy = cy - closestY;
+
+    return dx * dx + dy * dy <
+        radius * radius;
+}
+
+
+/* =========================
+   WALL COLLISION
+========================= */
+
+function canMove(x, y) {
+    // Gunakan collision kotak sesuai ukuran player.
+    // Ini lebih akurat daripada lingkaran, sehingga sudut player
+    // tidak bisa menembus sudut tembok.
+    const playerW = 48;
+    const playerH = 52;
+
+    for (const wall of walls) {
+        const padding = 1;
+        const hit =
+            x < wall.x + wall.w - padding &&
+            x + playerW > wall.x + padding &&
+            y < wall.y + wall.h - padding &&
+            y + playerH > wall.y + padding;
+
+        if (hit) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+/* =========================
+   ATTACK
+========================= */
+
+function enemyDeathEffect(enemy) {
+    const x = enemy.x + 20;
+    const y = enemy.y + 20;
+
+    enemy.element.classList.add("enemy-dying");
+
+    // Percikan partikel
+    for (let i = 0; i < 8; i++) {
+        const particle = document.createElement("div");
+        particle.className = "enemy-particle";
+        particle.style.left = x + "px";
+        particle.style.top = y + "px";
+
+        const angle = (Math.PI * 2 * i) / 8;
+        const distance = 25 + Math.random() * 25;
+        particle.style.setProperty("--dx", Math.cos(angle) * distance + "px");
+        particle.style.setProperty("--dy", Math.sin(angle) * distance + "px");
+
+        world.appendChild(particle);
+
+        setTimeout(() => particle.remove(), 500);
+    }
+
+    // Hilangkan musuh setelah animasi selesai
+    setTimeout(() => {
+        if (enemy.element) {
+            enemy.element.remove();
+        }
+    }, 480);
+}
+
+function attack() {
+
+    if (!gameRunning || attacking)
+        return;
+
+    const now = Date.now();
+
+    if (now - lastAttackTime < 300)
+        return;
+
+    lastAttackTime = now;
+    attacking = true;
+
+    const angle =
+        Math.atan2(facingY, facingX);
+
+    sword.style.left =
+        (px + 27) + "px";
+
+    sword.style.top =
+        (py + 25) + "px";
+
+    sword.style.display = "block";
+    sword.classList.remove("swinging");
+
+    // Restart animasi setiap kali tombol serang ditekan.
+    void sword.offsetWidth;
+
+    sword.style.setProperty("--attack-angle", angle + "rad");
+    sword.classList.add("swinging");
+
+    sword.style.transform =
+        `rotate(${angle}rad)`;
+
+    enemies.forEach(enemy => {
+
+        const dx = enemy.x - px;
+        const dy = enemy.y - py;
+
+        const dist =
+            Math.hypot(dx, dy);
+
+        if (dist > 85)
+            return;
+
+        const dot =
+            (dx * facingX + dy * facingY) /
+            Math.max(dist, 1);
+
+        if (dot < 0.1)
+            return;
+
+        enemy.hp -= weaponDamage;
+
+        if (enemy.isBoss) {
+            updateBossBar(enemy.hp);
+        }
+
+        enemy.element.style.transform =
+            "scale(1.35)";
+
+        setTimeout(() => {
+
+            if (enemy.element) {
+                enemy.element.style.transform =
+                    "scale(1)";
+            }
+
+        }, 100);
+
+        if (enemy.hp <= 0) {
+
+            enemyDeathEffect(enemy);
+
+            const index =
+                enemies.indexOf(enemy);
+
+            if (index !== -1) {
+                enemies.splice(index, 1);
+            }
+
+            if (enemy.isBoss) {
+                updateBossBar(0);
+                setTimeout(() => {
+                    gameRunning = false;
+                    showMessage(
+                        "👑 BOSS DIKALAHKAN!",
+                        `Kamu berhasil menaklukkan Dark Lord dan menyelesaikan Level 5! Total koin: ${coins}`
+                    );
+                }, 800);
+            }
+        }
+    });
+
+    setTimeout(() => {
+
+        sword.style.display = "none";
+        sword.classList.remove("swinging");
+        attacking = false;
+
+    }, 180);
+}
+
+
+/* =========================
+   DAMAGE PLAYER
+========================= */
+
+function damagePlayer() {
+
+    const now = Date.now();
+
+    if (now - lastDamageTime < 700)
+        return;
+
+    lastDamageTime = now;
+
+    hp -= currentLevel.damage;
+
+    hp = Math.max(0, hp);
+
+    document.getElementById("hp")
+        .style.width = hp + "%";
+
+    document.getElementById("hpText")
+        .innerText = hp;
+
+    player.style.background = "white";
+
+    setTimeout(() => {
+
+        player.style.background =
+            "#35a7ff";
+
+    }, 120);
+
+    if (hp <= 0) {
+
+        gameRunning = false;
+
+        showMessage(
+            "💀 GAME OVER",
+            "Petualanganmu berakhir..."
+        );
+    }
+}
+
+
+/* =========================
+   ENEMY MOVEMENT
+========================= */
+
+function updateEnemies() {
+
+    enemies.forEach(enemy => {
+
+        const dx = px - enemy.x;
+        const dy = py - enemy.y;
+
+        const dist =
+            Math.hypot(dx, dy);
+
+        if (
+            dist < 350 &&
+            dist > 1
+        ) {
+
+            const vx =
+                (dx / dist) * enemy.speed;
+
+            const vy =
+                (dy / dist) * enemy.speed;
+
+            const nextX =
+                enemy.x + vx;
+
+            const nextY =
+                enemy.y + vy;
+
+            const enemyRadius = 20;
+
+            if (
+                !walls.some(wall =>
+                    circleRectCollision(
+                        nextX + enemyRadius,
+                        nextY + enemyRadius,
+                        enemyRadius,
+                        wall
+                    )
+                )
+            ) {
+                enemy.x = nextX;
+                enemy.y = nextY;
+            }
+        }
+
+        enemy.element.style.left =
+            enemy.x + "px";
+
+        enemy.element.style.top =
+            enemy.y + "px";
+
+        if (dist < 42) {
+            damagePlayer();
+        }
+
+    });
+}
+
+
+/* =========================
+   COINS
+========================= */
+
+function updateCoins() {
+
+    coinObjects.forEach(coin => {
+
+        if (coin.collected)
+            return;
+
+        if (
+            distance(
+                px,
+                py,
+                coin.x,
+                coin.y
+            ) < 35
+        ) {
+
+            coin.collected = true;
+
+            coin.element.remove();
+
+            coins++;
+
+            document.getElementById("coins")
+                .innerText = coins;
+        }
+    });
+}
+
+
+/* =========================
+   MOVEMENT
+========================= */
+
+function movement() {
+
+    if (!gameRunning)
+        return;
+
+    let dx = 0;
+    let dy = 0;
+
+    if (
+        keys["ArrowUp"] ||
+        keys["w"] ||
+        keys["W"]
+    ) {
+        dy--;
+    }
+
+    if (
+        keys["ArrowDown"] ||
+        keys["s"] ||
+        keys["S"]
+    ) {
+        dy++;
+    }
+
+    if (
+        keys["ArrowLeft"] ||
+        keys["a"] ||
+        keys["A"]
+    ) {
+        dx--;
+    }
+
+    if (
+        keys["ArrowRight"] ||
+        keys["d"] ||
+        keys["D"]
+    ) {
+        dx++;
+    }
+
+    if (dx !== 0 || dy !== 0) {
+
+        const length =
+            Math.hypot(dx, dy);
+
+        dx /= length;
+        dy /= length;
+
+        facingX = dx;
+        facingY = dy;
+
+        // Ksatria membalik badan secara halus ketika berganti arah.
+        if (dx < 0) {
+            player.classList.remove("facing-right");
+            player.classList.add("facing-left");
+        } else if (dx > 0) {
+            player.classList.remove("facing-left");
+            player.classList.add("facing-right");
+        }
+
+        const nx =
+            px + dx * speed;
+
+        const ny =
+            py + dy * speed;
+
+        if (canMove(nx, py)) {
+            px = nx;
+        }
+
+        if (canMove(px, ny)) {
+            py = ny;
+        }
+    }
+
+    player.style.left =
+        px + "px";
+
+    player.style.top =
+        py + "px";
+
+    // Animasi berjalan hanya aktif ketika ksatria benar-benar bergerak.
+    if (dx !== 0 || dy !== 0) {
+        player.classList.add("walking");
+    } else {
+        player.classList.remove("walking");
+    }
+}
+
+
+/* =========================
+   CAMERA
+========================= */
+
+function camera() {
+
+    const screenX =
+        window.innerWidth / 2;
+
+    const screenY =
+        window.innerHeight / 2;
+
+    let camX =
+        screenX - px - 21;
+
+    let camY =
+        screenY - py - 21;
+
+    const minCamX =
+        window.innerWidth - currentLevel.width;
+
+    const minCamY =
+        window.innerHeight - currentLevel.height;
+
+    camX =
+        Math.min(
+            0,
+            Math.max(minCamX, camX)
+        );
+
+    camY =
+        Math.min(
+            0,
+            Math.max(minCamY, camY)
+        );
+
+    world.style.transform =
+        `translate(${camX}px, ${camY}px)`;
+}
+
+
+
+/* =========================
+   QUIZ BAHASA INDONESIA KELAS 11
+   Muncul setelah Level 1 selesai
+========================= */
+const quizSets = {
+    1: [
+        {q:"Apa tujuan utama teks eksplanasi?",options:["Menghibur pembaca","Menjelaskan proses terjadinya suatu fenomena","Membujuk membeli produk","Menggambarkan tokoh"],answer:1},
+        {q:"Kalimat yang menggunakan kata baku adalah ...",options:["Adik membeli obat di apotik.","Ibu sedang mengantri.","Siswa itu memperoleh nilai yang baik.","Kami sudah merubah jadwal."],answer:2},
+        {q:"Struktur teks ceramah yang berisi salam pembuka dan pengantar topik disebut ...",options:["Penutup","Isi","Pembukaan","Simpulan"],answer:2},
+        {q:"Kalimat yang termasuk persuasif adalah ...",options:["Sampah plastik sulit terurai.","Marilah kita mengurangi penggunaan plastik sekali pakai.","Plastik banyak digunakan.","Sampah ditemukan di berbagai tempat."],answer:1},
+        {q:"Unsur intrinsik yang berkaitan dengan tempat, waktu, dan suasana disebut ...",options:["Alur","Tokoh","Latar","Amanat"],answer:2}
+    ],
+    2: [
+        {q:"Tujuan utama proposal adalah ...",options:["Menceritakan pengalaman","Mengajukan rencana kegiatan agar mendapat persetujuan","Menghibur pembaca","Menggambarkan tokoh"],answer:1},
+        {q:"Bagian proposal yang menjelaskan alasan kegiatan dilaksanakan adalah ...",options:["Latar belakang","Daftar pustaka","Penutup","Lampiran"],answer:0},
+        {q:"Karya ilmiah harus menggunakan bahasa yang ...",options:["Santai dan bebas","Baku dan objektif","Penuh majas","Tidak teratur"],answer:1},
+        {q:"Daftar sumber yang digunakan dalam karya ilmiah disebut ...",options:["Abstrak","Bibliografi/daftar pustaka","Kata pengantar","Indeks"],answer:1},
+        {q:"Kalimat efektif adalah kalimat yang ...",options:["Bertele-tele","Jelas, logis, dan sesuai kaidah","Selalu panjang","Menggunakan banyak kata asing"],answer:1}
+    ],
+    3: [
+        {q:"Teks editorial biasanya berisi ...",options:["Pendapat redaksi terhadap suatu isu","Cerita fantasi","Petunjuk membuat makanan","Dialog drama"],answer:0},
+        {q:"Fakta dalam teks editorial digunakan untuk ...",options:["Memperkuat pendapat","Menghias tulisan","Menghibur pembaca","Menggantikan judul"],answer:0},
+        {q:"Salah satu ciri artikel adalah ...",options:["Berisi informasi dan gagasan tentang suatu topik","Selalu berbentuk dialog","Hanya berisi khayalan","Tidak memiliki topik"],answer:0},
+        {q:"Kata hubung yang menyatakan sebab adalah ...",options:["Tetapi","Karena","Kemudian","Atau"],answer:1},
+        {q:"Pernyataan yang dapat dibuktikan kebenarannya disebut ...",options:["Opini","Fakta","Saran","Hipotesis"],answer:1}
+    ],
+    4: [
+        {q:"Resensi adalah teks yang berisi ...",options:["Penilaian atau ulasan terhadap suatu karya","Petunjuk penggunaan alat","Berita kecelakaan","Surat pribadi"],answer:0},
+        {q:"Bagian resensi yang berisi penilaian kelebihan dan kekurangan karya disebut ...",options:["Identitas","Evaluasi","Orientasi","Judul"],answer:1},
+        {q:"Drama merupakan karya sastra yang terutama disampaikan melalui ...",options:["Dialog dan peran","Tabel","Grafik","Daftar pustaka"],answer:0},
+        {q:"Pesan yang ingin disampaikan pengarang kepada pembaca disebut ...",options:["Latar","Amanat","Alur","Sudut pandang"],answer:1},
+        {q:"Kalimat yang paling tepat untuk menyampaikan kritik secara santun adalah ...",options:["Buku ini jelek sekali.","Penulisnya tidak bisa menulis.","Buku ini memiliki ide menarik, tetapi beberapa bagian masih perlu diperjelas.","Buku ini sama sekali tidak berguna."],answer:2}
+    ]
+};
+
+let currentQuizQuestions = quizSets[1];
+let quizNextLevel = 2;
+let quizIndex = 0;
+let quizScore = 0;
+let quizAnswered = false;
+
+function startQuiz(completedLevel = currentLevelNumber){
+    gameRunning = false;
+    quizNextLevel = completedLevel + 1;
+    currentQuizQuestions = quizSets[completedLevel] || quizSets[1];
+    quizIndex = 0;
+    quizScore = 0;
+    document.getElementById("quizModal").style.display = "flex";
+    renderQuizQuestion();
+}
+
+function renderQuizQuestion(){
+    const item = currentQuizQuestions[quizIndex];
+    quizAnswered = false;
+    document.getElementById("quizProgress").innerText =
+        `Quiz setelah Level ${quizNextLevel - 1} • Soal ${quizIndex + 1} dari ${currentQuizQuestions.length} • Nilai: ${quizScore}`;
+    document.getElementById("quizQuestion").innerText = item.q;
+
+    const optionsBox = document.getElementById("quizOptions");
+    optionsBox.innerHTML = "";
+    item.options.forEach((option,index)=>{
+        const btn=document.createElement("button");
+        btn.type="button";
+        btn.className="quizOption";
+        btn.innerText=`${String.fromCharCode(65+index)}. ${option}`;
+        btn.addEventListener("click",()=>answerQuiz(index,btn));
+        optionsBox.appendChild(btn);
+    });
+    document.getElementById("quizFeedback").innerText="";
+    document.getElementById("quizNext").style.display="none";
+    document.getElementById("quizRetry").style.display="none";
+}
+
+function answerQuiz(selected,selectedButton){
+    if(quizAnswered)return;
+    quizAnswered=true;
+    const item=currentQuizQuestions[quizIndex];
+    document.querySelectorAll(".quizOption").forEach((btn,i)=>{
+        btn.disabled=true;
+        if(i===item.answer)btn.classList.add("correct");
+    });
+    if(selected===item.answer){
+        quizScore++;
+        selectedButton.classList.add("correct");
+        document.getElementById("quizFeedback").innerText="✅ Benar!";
+        document.getElementById("quizFeedback").style.color="#62e58b";
+    }else{
+        selectedButton.classList.add("wrong");
+        document.getElementById("quizFeedback").innerText="❌ Kurang tepat. Jawaban yang benar sudah ditandai.";
+        document.getElementById("quizFeedback").style.color="#ff7777";
+    }
+    document.getElementById("quizNext").style.display="block";
+}
+
+
+function teleportToLevel(target){
+    const effect=document.getElementById("teleportEffect");
+    effect.classList.add("active");
+    gameRunning=false;
+
+    setTimeout(()=>{
+        effect.classList.remove("active");
+        if(target<=5){
+            loadLevel(target);
+        }else{
+            showMessage("🏆 PETUALANGAN SELESAI!","Kamu menaklukkan Level 1 sampai 5!");
+        }
+    },950);
+}
+
+function finishQuiz(){
+    const passed=quizScore>=3;
+    const target=quizNextLevel;
+    document.getElementById("quizQuestion").innerHTML=
+        `<div id="quizResult"><strong>${passed?"🎉 QUIZ LULUS!":"📖 QUIZ BELUM LULUS"}</strong><br>
+        Nilaimu: <strong>${quizScore}/${currentQuizQuestions.length}</strong><br>
+        ${passed?`Hebat! Kamu boleh melanjutkan ke Level ${target}.`:`Minimal 3 jawaban benar untuk membuka Level ${target}.`}</div>`;
+    document.getElementById("quizOptions").innerHTML="";
+    document.getElementById("quizFeedback").innerText="";
+    document.getElementById("quizNext").style.display="none";
+    document.getElementById("quizRetry").style.display="block";
+
+    if(passed){
+        document.getElementById("quizRetry").innerText=target<=5?`LANJUT KE LEVEL ${target} ➜`:"SELESAI";
+        document.getElementById("quizRetry").onclick=()=>{
+            document.getElementById("quizModal").style.display="none";
+            if(target<=5)teleportToLevel(target);
+            else teleportToLevel(5);
+        };
+    }else{
+        document.getElementById("quizRetry").innerText="ULANGI QUIZ 🔄";
+        document.getElementById("quizRetry").onclick=()=>startQuiz(target-1);
+    }
+}
+
+document.getElementById("quizNext").addEventListener("click",()=>{
+    quizIndex++;
+    if(quizIndex<currentQuizQuestions.length)renderQuizQuestion();
+    else finishQuiz();
+});
+
+
+
+/* =========================
+   PORTAL
+========================= */
+
+function checkPortal() {
+
+    const portalX = currentLevel.portal.x;
+    const portalY = currentLevel.portal.y;
+
+    if (
+        distance(
+            px,
+            py,
+            portalX,
+            portalY
+        ) < 75
+    ) {
+
+        if (currentLevelNumber < 5) {
+            gameRunning = false;
+            const nextLevel = currentLevelNumber + 1;
+            showMessage(
+                `🏆 LEVEL ${currentLevelNumber} SELESAI!`,
+                `Selesaikan Quiz Bahasa Indonesia Kelas 11 untuk membuka Level ${nextLevel}.`
+            );
+            setTimeout(() => {
+                document.getElementById("message").style.display = "none";
+                startQuiz(currentLevelNumber);
+            }, 1200);
+        } else if (currentLevelNumber === 5) {
+            // Level 5 diselesaikan dengan mengalahkan satu-satunya boss.
+            gameRunning = false;
+            showMessage(
+                "👹 BOSS MASIH HIDUP!",
+                "Kalahkan Dark Lord terlebih dahulu untuk menyelesaikan Level 5."
+            );
+        }
+    }
+}
+
+
+
+/* =========================
+   UPGRADE SENJATA
+========================= */
+
+function updateUpgradeUI(notice = "") {
+    const nextCost = weaponCosts[weaponLevel];
+    const stats = document.getElementById("weaponStats");
+    const action = document.getElementById("upgradeAction");
+    const noticeEl = document.getElementById("upgradeNotice");
+
+    stats.innerHTML =
+        `Level Senjata: <span class="weaponLevelBadge">${weaponLevel}/${weaponMaxLevel}</span><br>` +
+        `⚔️ Damage serangan: <strong>${weaponDamage}</strong><br>` +
+        `🪙 Koin kamu: <strong>${coins}</strong>`;
+
+    if (weaponLevel >= weaponMaxLevel) {
+        action.innerText = "✨ SENJATA SUDAH MAKSIMAL";
+        action.disabled = true;
+    } else {
+        action.innerText = `⬆️ UPGRADE — ${nextCost} 🪙`;
+        action.disabled = coins < nextCost;
+    }
+
+    noticeEl.innerText = notice;
+}
+
+function openUpgradeMenu() {
+    if (!gameStarted) return;
+
+    gameRunning = false;
+    document.getElementById("upgradeModal").style.display = "flex";
+    updateUpgradeUI();
+}
+
+function closeUpgradeMenu() {
+    document.getElementById("upgradeModal").style.display = "none";
+    if (gameStarted && document.getElementById("quizModal").style.display !== "flex") {
+        gameRunning = true;
+    }
+}
+
+function upgradeWeapon() {
+    if (weaponLevel >= weaponMaxLevel) return;
+
+    const cost = weaponCosts[weaponLevel];
+
+    if (coins < cost) {
+        updateUpgradeUI("🪙 Koin belum cukup!");
+        return;
+    }
+
+    coins -= cost;
+    weaponLevel++;
+    weaponDamage = weaponDamageByLevel[weaponLevel];
+
+    document.getElementById("coins").innerText = coins;
+
+    // Efek visual sederhana pada pedang saat berhasil upgrade.
+    sword.classList.add("weapon-upgraded");
+    setTimeout(() => sword.classList.remove("weapon-upgraded"), 650);
+
+    updateUpgradeUI(
+        `🎉 Senjata naik ke Level ${weaponLevel}! Damage sekarang ${weaponDamage}.`
+    );
+}
+
+document.getElementById("upgradeButton")
+    .addEventListener("click", openUpgradeMenu);
+
+document.getElementById("upgradeAction")
+    .addEventListener("click", upgradeWeapon);
+
+document.getElementById("upgradeClose")
+    .addEventListener("click", closeUpgradeMenu);
+
+document.getElementById("upgradeModal")
+    .addEventListener("click", (event) => {
+        if (event.target.id === "upgradeModal") {
+            closeUpgradeMenu();
+        }
+    });
+
+
+/* =========================
+   MESSAGE
+========================= */
+
+function showMessage(title, text) {
+
+    document.getElementById("message")
+        .style.display = "block";
+
+    document.getElementById("messageTitle")
+        .innerText = title;
+
+    document.getElementById("messageText")
+        .innerText = text;
+}
+
+
+function restartGame() {
+    hp = 100;
+    coins = 0;
+    weaponLevel = 0;
+    weaponDamage = 1;
+    lastDamageTime = 0;
+    lastAttackTime = 0;
+    attacking = false;
+    sword.classList.remove("swinging");
+    sword.style.display = "none";
+
+    document.getElementById("hp").style.width = "100%";
+    document.getElementById("hpText").innerText = "100";
+    document.getElementById("coins").innerText = "0";
+    updateUpgradeUI();
+    document.getElementById("bossBarBox").style.display = "none";
+    document.getElementById("message").style.display = "none";
+
+    loadLevel(1);
+}
+
+
+// =========================
+// MENU MULAI
+// =========================
+let gameStarted = false;
+
+
+function backToMainMenu() {
+    // Hentikan gameplay sementara.
+    gameRunning = false;
+    gameStarted = false;
+
+    attacking = false;
+    sword.classList.remove("swinging");
+    sword.style.display = "none";
+
+    // Tampilkan kembali menu utama.
+    const menu = document.getElementById("mainMenu");
+    menu.style.display = "flex";
+
+    // Memaksa browser menerapkan ulang animasi menu.
+    menu.classList.remove("hidden");
+    void menu.offsetWidth;
+
+    // Reset game agar tombol MULAI nanti kembali ke Level 1.
+    hp = 100;
+    coins = 0;
+    document.getElementById("hp").style.width = "100%";
+    document.getElementById("hpText").innerText = "100";
+    document.getElementById("coins").innerText = "0";
+    document.getElementById("message").style.display = "none";
+}
+
+function startGame() {
+    gameStarted = true;
+
+    const menu = document.getElementById("mainMenu");
+    menu.classList.add("hidden");
+
+    setTimeout(() => {
+        menu.style.display = "none";
+    }, 450);
+
+    // Fokuskan gameplay dan mulai dari Level 1.
+    restartGame();
+}
+
+document.getElementById("startButton").addEventListener("click", startGame);
+
+/* =========================
+   GAME LOOP
+========================= */
+
+function gameLoop() {
+
+    if (gameStarted && gameRunning) {
+
+        movement();
+        updateEnemies();
+        updateCoins();
+        checkPortal();
+
+    }
+
+    camera();
+
+    requestAnimationFrame(gameLoop);
+}
+
+
+/* =========================
+   START GAME
+========================= */
+
+player.style.left = px + "px";
+player.style.top = py + "px";
+player.classList.add("facing-right");
+
+gameLoop();
+
+</script>
+
+</body>
+</html>
